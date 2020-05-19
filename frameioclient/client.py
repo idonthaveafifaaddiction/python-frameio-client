@@ -32,7 +32,7 @@ class FrameioClient(object):
 
     return metadata.version('frameioclient')
 
-  def _api_call(self, method, endpoint, page_size=None, page=None, payload={}):
+  def _api_call(self, method, endpoint, payload={}, page_size=None, page=None):
     url = '{}/v2{}'.format(self.host, endpoint)
 
     headers = {
@@ -45,7 +45,6 @@ class FrameioClient(object):
     http = requests.Session()
     http.mount("https://", adapter)
 
-    # If a page size is passed, we use it - otherwise ignore this
     if page_size:
       url += "?page_size={}".format(page_size)
 
@@ -61,8 +60,6 @@ class FrameioClient(object):
         if int(r.headers.get('total-pages')) > 1:
           results = r.json()
 
-          # If a specific page is requested, then return immediately - otherwise \
-          # go grab the rest of the pages!
           if page:
             return results
 
@@ -77,8 +74,6 @@ class FrameioClient(object):
               )
             )
 
-          # Depending on how many pages are returned, it's either a list of lists or \
-          # it's a single result and we don't need to iterate over result sets
           if len(additional_results) > 1:
             for potential_result_set in additional_results:
               for result in potential_result_set:
@@ -93,7 +88,7 @@ class FrameioClient(object):
 
     return r.raise_for_status()
 
-  def get_addtl_pages(self, http, r, method, payload, headers, page_number, total_pages):
+  def get_more_pages(self, http, r, method, payload, headers, page_number, total_pages):
 
       for i in range(page_number, total_pages):
         print("Checking page {} of {}".format(i, total_pages))
@@ -101,7 +96,6 @@ class FrameioClient(object):
         try:
           next_url = r.links['next']['url']
         except KeyError:
-          print("Out of pages to check, breaking and returning...")
           break
 
         r = http.request(
