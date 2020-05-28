@@ -29,8 +29,8 @@ class FrameioUploader(object):
     order = task[2]
 
     if order == 0:
-      print("Sleeping for 10 seconds")
-      time.sleep(10)
+      print("Sleeping for 30 seconds")
+      time.sleep(30)
       print("Done sleeping")
 
     session = self._get_session()
@@ -47,7 +47,15 @@ class FrameioUploader(object):
     upload_urls = self.asset['upload_urls']
     size = int(math.ceil(total_size / len(upload_urls)))
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
       for i, chunk in enumerate(self._read_chunk(self.file, size)):
+        # if i == 0:
+        #   task = (upload_urls[i], chunk, i)
+        #   executor.submit(self._upload_chunk, task)
+        #   time.sleep(10)
+        # else:
+        #   task = (upload_urls[i], chunk, i)
+        #   executor.submit(self._upload_chunk, task)
+        
         task = (upload_urls[i], chunk, i)
         executor.submit(self._upload_chunk, task)
