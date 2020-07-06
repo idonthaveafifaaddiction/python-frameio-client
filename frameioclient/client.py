@@ -63,7 +63,7 @@ class FrameioClient(object):
           if page:
             return results
 
-          additional_results = list(self.get_addtl_pages(
+          additional_results = list(self.get_more_pages(
                 http,
                 r,
                 method,
